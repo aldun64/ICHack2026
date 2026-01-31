@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden Companions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #2d5f3f 0%, #4a9d6f 50%, #5eb3a8 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(94, 179, 168, 0.2) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, 20px); }
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Custom scrollbar */
+        .container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: rgba(94, 179, 168, 0.1);
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #4a9d6f, #5eb3a8);
+            border-radius: 10px;
+        }
+
+        /* ===== TITLE SCREEN ===== */
+        .title-screen-content {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .title-logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .title-main {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #2d5f3f, #5eb3a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .title-subtitle {
+            font-size: 20px;
+            color: #4a9d6f;
+            font-style: italic;
+            margin-bottom: 50px;
+        }
+
+        .title-description {
+            font-size: 16px;
+            color: #666;
+            max-width: 500px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .start-journey-btn {
+            padding: 18px 50px;
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4a9d6f, #5eb3a8);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 30px rgba(74, 157, 111, 0.4);
+            font-family: 'Georgia', serif;
+        }
+
+        .start-journey-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(74, 157, 111, 0.6);
+            background: linear-gradient(135deg, #5eb3a8, #4a9d6f);
+        }
+
+        .decorative-leaves {
+            margin-top: 40px;
+            font-size: 36px;
+            opacity: 0.6;
+            letter-spacing: 20px;
+        }
+
+        /* ===== COLLECTION SCREEN ===== */
+        .collection-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .collection-header h1 {
+            font-size: 42px;
+            background: linear-gradient(135deg, #2d5f3f, #5eb3a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .collection-header p {
+            font-size: 18px;
+            color: #4a9d6f;
+            font-style: italic;
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .character-card {
+            background: linear-gradient(135deg, #f0f9f5 0%, #e8f5f1 100%);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .character-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(94, 179, 168, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .character-card:hover::before {
+            opacity: 1;
+        }
+
+        .character-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 40px rgba(74, 157, 111, 0.3);
+            border-color: #5eb3a8;
+        }
+
+        .character-preview {
+            width: 160px;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            border: 4px solid #5eb3a8;
+            box-shadow: 0 8px 20px rgba(74, 157, 111, 0.3);
+            transition: all 0.4s ease;
+        }
+
+        .character-card:hover .character-preview {
+            border-width: 5px;
+            box-shadow: 0 12px 30px rgba(74, 157, 111, 0.5);
+        }
+
+        .character-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d5f3f;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .character-points-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #4a9d6f, #5eb3a8);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 15px rgba(74, 157, 111, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .character-state-badge {
+            font-size: 13px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            position: relative;
+            z-index: 1;
+        }
+
+        .badge-1 { background: #ffd4d4; color: #c62828; }
+        .badge-2 { background: #ffe4b3; color: #e65100; }
+        .badge-3 { background: #fff9c4; color: #f57f17; }
+        .badge-4 { background: #d4edda; color: #2d7a44; }
+        .badge-5 { background: #c8e6c9; color: #1b5e20; }
+
+        /* ===== DETAIL SCREEN ===== */
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .back-button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #4a9d6f, #5eb3a8);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(74, 157, 111, 0.3);
+            font-weight: bold;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 157, 111, 0.4);
+        }
+
+        .character-title {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #2d5f3f, #5eb3a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .character-wrapper {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .character-image {
+            width: 320px;
+            height: 320px;
+            object-fit: cover;
+            border-radius: 30px;
+            border: 6px solid #5eb3a8;
+            transition: all 0.5s ease;
+            box-shadow: 0 15px 40px rgba(74, 157, 111, 0.3);
+        }
+
+        .character-state {
+            margin-top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #2d5f3f;
+        }
+
+        .state-description {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 16px;
+            color: #4a9d6f;
+            font-style: italic;
+        }
+
+        .points-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .points-number {
+            font-size: 56px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4a9d6f, #5eb3a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 10px 0;
+        }
+
+        .points-label {
+            font-size: 20px;
+            color: #4a9d6f;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 35px;
+            background: rgba(94, 179, 168, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 25px 0;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a9d6f 0%, #5eb3a8 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(74, 157, 111, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 14px 28px;
+            font-size: 17px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-family: 'Georgia', serif;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #4a9d6f, #66b88f);
+            color: white;
+            box-shadow: 0 5px 15px rgba(74, 157, 111, 0.3);
+        }
+
+        .btn-add:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(74, 157, 111, 0.5);
+        }
+
+        .btn-subtract {
+            background: linear-gradient(135deg, #c62828, #e57373);
+            color: white;
+            box-shadow: 0 5px 15px rgba(198, 40, 40, 0.3);
+        }
+
+        .btn-subtract:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(198, 40, 40, 0.5);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #5eb3a8, #7ec4bb);
+            color: white;
+            box-shadow: 0 5px 15px rgba(94, 179, 168, 0.3);
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(94, 179, 168, 0.5);
+        }
+
+        .state-indicators {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f9f5, #e8f5f1);
+            border-radius: 20px;
+            box-shadow: inset 0 2px 10px rgba(74, 157, 111, 0.1);
+        }
+
+        .state-indicator {
+            text-align: center;
+            font-size: 13px;
+            color: #7a9d8f;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+
+        .state-indicator.active {
+            color: #2d5f3f;
+            font-weight: bold;
+            transform: scale(1.15);
+        }
+
+        /* State-specific styling */
+        .state-1 { border-color: #c62828; box-shadow: 0 15px 40px rgba(198, 40, 40, 0.3); }
+        .state-2 { border-color: #e65100; box-shadow: 0 15px 40px rgba(230, 81, 0, 0.3); }
+        .state-3 { border-color: #f57f17; box-shadow: 0 15px 40px rgba(245, 127, 23, 0.3); }
+        .state-4 { border-color: #4a9d6f; box-shadow: 0 15px 40px rgba(74, 157, 111, 0.3); }
+        .state-5 { border-color: #2d7a44; box-shadow: 0 15px 40px rgba(45, 122, 68, 0.3); }
+
+        .quick-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid rgba(94, 179, 168, 0.3);
+        }
+
+        .quick-nav-label {
+            width: 100%;
+            text-align: center;
+            color: #4a9d6f;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .quick-nav-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .quick-nav-btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #f0f9f5, #e8f5f1);
+            color: #2d5f3f;
+            border: 2px solid #5eb3a8;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-family: 'Georgia', serif;
+        }
+
+        .quick-nav-btn:hover {
+            background: linear-gradient(135deg, #5eb3a8, #4a9d6f);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(94, 179, 168, 0.4);
+        }
+
+        .quick-nav-btn.current {
+            background: linear-gradient(135deg, #4a9d6f, #5eb3a8);
+            color: white;
+            box-shadow: 0 5px 15px rgba(74, 157, 111, 0.4);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .title-main {
+                font-size: 36px;
+            }
+
+            .character-image {
+                width: 250px;
+                height: 250px;
+            }
+
+            .points-number {
+                font-size: 42px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- TITLE SCREEN -->
+    <div id="titleScreen" class="screen active">
+        <div class="container">
+            <div class="title-screen-content">
+                <div class="title-logo">🌿</div>
+                <h1 class="title-main">Garden Companions</h1>
+                <p class="title-subtitle">Nurture Your Digital Garden</p>
+                <p class="title-description">
+                    Welcome to your personal garden sanctuary. Each companion grows and thrives 
+                    with your care and attention. Watch them flourish as you tend to their needs.
+                </p>
+                <button class="start-journey-btn" onclick="enterGarden()">
+                    Enter Garden
+                </button>
+                <div class="decorative-leaves">🍃 🌱 🌿 🍃</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARACTER COLLECTION SCREEN -->
+    <div id="collectionScreen" class="screen">
+        <div class="container">
+            <div class="collection-header">
+                <h1>🌸 Your Garden Companions 🌸</h1>
+                <p>Select a companion to check their wellbeing</p>
+            </div>
+
+            <div class="character-grid" id="characterGrid">
+                <!-- Character cards will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARACTER DETAIL SCREEN -->
+    <div id="detailScreen" class="screen">
+        <div class="container">
+            <div class="detail-header">
+                <button class="back-button" onclick="backToCollection()">🌿 Back to Garden</button>
+                <div class="character-title" id="characterTitle"></div>
+            </div>
+
+            <div class="character-wrapper">
+                <img id="characterImage" 
+                     src="" 
+                     alt="Character" 
+                     class="character-image state-3">
+                <div class="character-state" id="characterState">Growing</div>
+                <div class="state-description" id="stateDescription"></div>
+            </div>
+
+            <div class="points-display">
+                <div class="points-label">Vitality Points</div>
+                <div class="points-number" id="pointsDisplay">25</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 50%;"></div>
+            </div>
+
+            <div class="state-indicators" id="stateIndicators">
+                <!-- Dynamic state indicators will be generated here -->
+            </div>
+
+            <div class="controls">
+                <button class="btn-subtract" onclick="changePoints(-10)">-10</button>
+                <button class="btn-subtract" onclick="changePoints(-5)">-5</button>
+                <button class="btn-reset" onclick="resetPoints()">Reset</button>
+                <button class="btn-add" onclick="changePoints(5)">+5</button>
+                <button class="btn-add" onclick="changePoints(10)">+10</button>
+            </div>
+
+            <div class="quick-nav">
+                <div class="quick-nav-label">🌱 Switch Companions</div>
+                <div class="quick-nav-buttons" id="quickNavButtons"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔥 SHARED STATE IMAGES - ALL CHARACTERS USE THESE SAME 5 IMAGES
+        const stateImages = {
+            1: "images/state1-critical.jpg",
+            2: "images/state2-low.jpg",
+            3: "images/state3-normal.jpg",
+            4: "images/state4-good.jpg",
+            5: "images/state5-excellent.jpg"
+        };
+
+        // 🔥 4 CHARACTERS WITH PARAMETER n
+        // State bins: 
+        // State 1: 0-10
+        // State 2: 10 - (20+n)
+        // State 3: (20+n) - (30+2n)
+        // State 4: (30+2n) - (40+3n)
+        // State 5: (40+3n) - infinity
+        const characters = [
+            {
+                id: "char1",
+                name: "char1",
+                n: 1,        // Parameter n = 1
+                points: 25   // Starting points
+            },
+            {
+                id: "char2",
+                name: "char2",
+                n: 2,        // Parameter n = 2
+                points: 35
+            },
+            {
+                id: "char3",
+                name: "char3",
+                n: 3,        // Parameter n = 3
+                points: 45
+            },
+            {
+                id: "char4",
+                name: "char4",
+                n: 4,        // Parameter n = 4
+                points: 55
+            }
+        ];
+
+        // State configurations (names and descriptions)
+        const stateInfo = {
+            1: { 
+                name: "Wilting", 
+                class: "state-1",
+                description: "Your companion needs immediate care!"
+            },
+            2: { 
+                name: "Struggling", 
+                class: "state-2",
+                description: "Your companion could use some attention..."
+            },
+            3: { 
+                name: "Growing", 
+                class: "state-3",
+                description: "Your companion is doing well"
+            },
+            4: { 
+                name: "Thriving", 
+                class: "state-4",
+                description: "Your companion is flourishing beautifully!"
+            },
+            5: { 
+                name: "Flourishing", 
+                class: "state-5",
+                description: "Your companion is in perfect condition!"
+            }
+        };
+
+        let currentCharacter = null;
+
+        // 🔥 CALCULATE STATE THRESHOLDS BASED ON CHARACTER'S n
+        function getStateThresholds(n) {
+            return {
+                1: { min: 0, max: 10 },
+                2: { min: 10, max: 20 + n },
+                3: { min: 20 + n, max: 30 + 2*n },
+                4: { min: 30 + 2*n, max: 40 + 3*n },
+                5: { min: 40 + 3*n, max: Infinity }
+            };
+        }
+
+        // Enter garden from title screen
+        function enterGarden() {
+            document.getElementById('titleScreen').classList.remove('active');
+            document.getElementById('collectionScreen').classList.add('active');
+            initCollectionScreen();
+        }
+
+        // Get current state based on points and character's n parameter
+        function getCurrentState(character) {
+            const thresholds = getStateThresholds(character.n);
+            
+            for (let stateNum = 1; stateNum <= 5; stateNum++) {
+                const threshold = thresholds[stateNum];
+                if (character.points >= threshold.min && character.points < threshold.max) {
+                    return { 
+                        num: stateNum, 
+                        ...stateInfo[stateNum],
+                        ...threshold
+                    };
+                }
+            }
+            // Fallback to state 5 if points exceed all thresholds
+            return { 
+                num: 5, 
+                ...stateInfo[5],
+                ...thresholds[5]
+            };
+        }
+
+        // Initialize collection screen
+        function initCollectionScreen() {
+            const characterGrid = document.getElementById('characterGrid');
+            characterGrid.innerHTML = '';
+
+            characters.forEach(character => {
+                const currentState = getCurrentState(character);
+                const maxPoints = getStateThresholds(character.n)[5].min; // First threshold of state 5
+                
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.onclick = () => viewCharacter(character.id);
+                card.innerHTML = `
+                    <img src="${stateImages[currentState.num]}" alt="${character.name}" class="character-preview">
+                    <div class="character-name">${character.name}</div>
+                    <div class="character-points-badge">${character.points} pts (n=${character.n})</div>
+                    <div class="character-state-badge badge-${currentState.num}">${currentState.name}</div>
+                `;
+                characterGrid.appendChild(card);
+            });
+        }
+
+        // View a specific character
+        function viewCharacter(characterId) {
+            currentCharacter = characters.find(c => c.id === characterId);
+            if (!currentCharacter) return;
+
+            // Switch screens
+            document.getElementById('collectionScreen').classList.remove('active');
+            document.getElementById('detailScreen').classList.add('active');
+
+            // Set character title
+            document.getElementById('characterTitle').textContent = `${currentCharacter.name} (n=${currentCharacter.n})`;
+
+            // Generate quick navigation buttons
+            generateQuickNav();
+
+            // Update UI
+            updateDetailUI();
+        }
+
+        // Generate quick navigation buttons
+        function generateQuickNav() {
+            const quickNavButtons = document.getElementById('quickNavButtons');
+            quickNavButtons.innerHTML = '';
+
+            characters.forEach(character => {
+                const btn = document.createElement('button');
+                btn.className = 'quick-nav-btn';
+                if (character.id === currentCharacter.id) {
+                    btn.classList.add('current');
+                }
+                btn.textContent = character.name;
+                btn.onclick = () => {
+                    if (character.id !== currentCharacter.id) {
+                        viewCharacter(character.id);
+                    }
+                };
+                quickNavButtons.appendChild(btn);
+            });
+        }
+
+        // Generate dynamic state indicators based on character's n
+        function generateStateIndicators() {
+            const stateIndicatorsDiv = document.getElementById('stateIndicators');
+            stateIndicatorsDiv.innerHTML = '';
+            
+            const thresholds = getStateThresholds(currentCharacter.n);
+            const currentState = getCurrentState(currentCharacter);
+
+            for (let i = 1; i <= 5; i++) {
+                const threshold = thresholds[i];
+                const info = stateInfo[i];
+                const maxDisplay = threshold.max === Infinity ? '+' : threshold.max;
+                
+                const indicator = document.createElement('div');
+                indicator.className = 'state-indicator';
+                if (currentState.num === i) {
+                    indicator.classList.add('active');
+                }
+                indicator.innerHTML = `${info.name}<br>${threshold.min}-${maxDisplay}`;
+                stateIndicatorsDiv.appendChild(indicator);
+            }
+        }
+
+        // Update detail screen UI
+        function updateDetailUI() {
+            if (!currentCharacter) return;
+
+            const currentState = getCurrentState(currentCharacter);
+            const thresholds = getStateThresholds(currentCharacter.n);
+            const maxPoints = thresholds[5].min; // Use start of state 5 as reference max
+            
+            const characterImage = document.getElementById('characterImage');
+            const characterState = document.getElementById('characterState');
+            const stateDescription = document.getElementById('stateDescription');
+            const pointsDisplay = document.getElementById('pointsDisplay');
+            const progressFill = document.getElementById('progressFill');
+            
+            // Update points display
+            pointsDisplay.textContent = currentCharacter.points;
+            
+            // Update progress bar (relative to reaching state 5)
+            const percentage = Math.min((currentCharacter.points / maxPoints) * 100, 100);
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = Math.round(percentage) + '%';
+            
+            // Update character state text
+            characterState.textContent = currentState.name;
+            stateDescription.textContent = currentState.description;
+            
+            // Update character image based on current state
+            characterImage.src = stateImages[currentState.num];
+            
+            // Update character image border
+            characterImage.className = 'character-image ' + currentState.class;
+            
+            // Generate dynamic state indicators
+            generateStateIndicators();
+        }
+
+        // Change points for current character
+        function changePoints(amount) {
+            if (!currentCharacter) return;
+            
+            currentCharacter.points += amount;
+            currentCharacter.points = Math.max(0, currentCharacter.points); // No upper limit
+            updateDetailUI();
+        }
+
+        // Reset points for current character
+        function resetPoints() {
+            if (!currentCharacter) return;
+            
+            // Reset to middle of state 3
+            const thresholds = getStateThresholds(currentCharacter.n);
+            currentCharacter.points = Math.floor((thresholds[3].min + thresholds[3].max) / 2);
+            updateDetailUI();
+        }
+
+        // Go back to collection screen
+        function backToCollection() {
+            document.getElementById('detailScreen').classList.remove('active');
+            document.getElementById('collectionScreen').classList.add('active');
+            
+            // Refresh collection to show updated points
+            initCollectionScreen();
+        }
+    </script>
+</body>
+</html>
