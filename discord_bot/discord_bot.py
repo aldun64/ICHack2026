@@ -52,12 +52,39 @@ async def on_message(message):
         event_details = event_parser.parse_event_message(message.content)
 
         if event_details:
-            await handle_event_scheduling(message, event_details)
+            # Check if this is a duplicate of a recent event
+            is_duplicate = await check_duplicate_event(message, event_details)
+            if not is_duplicate:
+                await handle_event_scheduling(message, event_details)
     except Exception as e:
         print(f"Error processing event message: {e}")
 
     # Still allow commands to work if you add them later
     await bot.process_commands(message)
+
+async def check_duplicate_event(message: discord.Message, event_details: dict) -> bool:
+    """
+    Check if this event is a duplicate of a recently scheduled event.
+    Uses Claude's agent context/conversation history to determine this.
+    Returns True if it's a duplicate (should skip scheduling), False otherwise.
+    """
+    try:
+        # Use Claude with its conversation history to check for duplicates
+        is_duplicate = event_parser.check_event_similarity(event_details)
+
+        if is_duplicate:
+            await message.channel.send(
+                "ℹ️ This event seems similar to one we already scheduled recently. "
+                "If it's the same event, no need to schedule again! "
+                "Reply with `!force` if you want to schedule it anyway."
+            )
+            return True
+
+        return False
+
+    except Exception as e:
+        print(f"Error checking duplicate: {e}")
+        return False
 
 async def process_thread_response(message: discord.Message, incomplete_event: dict):
     """
@@ -166,6 +193,9 @@ async def handle_event_scheduling(message: discord.Message, event_details: dict)
 
             await message.channel.send(embed=embed)
             print(f"Event created: {event_details.get('name')} (ID: {event_id})")
+
+            # Add to agent context - tell Claude about this scheduled event for deduplication
+            event_parser.add_to_agent_context(event_details)
         else:
             await message.channel.send(f"❌ Error creating event: {response.status_code}")
             print(f"Error creating event: {response.status_code} - {response.text}")
