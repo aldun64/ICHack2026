@@ -156,15 +156,17 @@
 
         .decorative-leaves {
             margin-top: 40px;
-            font-size: 36px;
+            font-size: 24px;
             opacity: 0.6;
-            letter-spacing: 20px;
+            letter-spacing: 10px;
+            color: #4a9d6f;
         }
 
         /* ===== COLLECTION SCREEN ===== */
         .collection-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            position: relative;
         }
 
         .collection-header h1 {
@@ -180,6 +182,130 @@
             font-size: 18px;
             color: #4a9d6f;
             font-style: italic;
+        }
+
+        .leaderboard-toggle {
+            margin: 20px auto;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #5eb3a8, #7ec4bb);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(94, 179, 168, 0.3);
+        }
+
+        .leaderboard-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(94, 179, 168, 0.5);
+        }
+
+        .leaderboard-panel {
+            background: linear-gradient(135deg, #f0f9f5, #e8f5f1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(74, 157, 111, 0.2);
+            display: none;
+            animation: slideDown 0.5s ease;
+        }
+
+        .leaderboard-panel.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .leaderboard-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2d5f3f;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            border-color: #5eb3a8;
+            box-shadow: 0 5px 15px rgba(74, 157, 111, 0.2);
+        }
+
+        .leaderboard-rank {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a9d6f;
+            min-width: 40px;
+        }
+
+        .leaderboard-rank.first {
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .leaderboard-rank.second {
+            color: #C0C0C0;
+        }
+
+        .leaderboard-rank.third {
+            color: #CD7F32;
+        }
+
+        .leaderboard-info {
+            flex: 1;
+            margin: 0 20px;
+        }
+
+        .leaderboard-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d5f3f;
+            margin-bottom: 5px;
+        }
+
+        .leaderboard-state {
+            font-size: 14px;
+            color: #4a9d6f;
+            font-style: italic;
+        }
+
+        .leaderboard-points {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4a9d6f, #5eb3a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .character-grid {
@@ -550,7 +676,7 @@
     <div id="titleScreen" class="screen active">
         <div class="container">
             <div class="title-screen-content">
-                <div class="title-logo">🌿</div>
+                <div class="title-logo">*</div>
                 <h1 class="title-main">Garden Companions</h1>
                 <p class="title-subtitle">Nurture Your Digital Garden</p>
                 <p class="title-description">
@@ -560,7 +686,7 @@
                 <button class="start-journey-btn" onclick="enterGarden()">
                     Enter Garden
                 </button>
-                <div class="decorative-leaves">🍃 🌱 🌿 🍃</div>
+                <div class="decorative-leaves">* * * *</div>
             </div>
         </div>
     </div>
@@ -569,8 +695,19 @@
     <div id="collectionScreen" class="screen">
         <div class="container">
             <div class="collection-header">
-                <h1>🌸 Your Garden Companions 🌸</h1>
+                <h1>Your Garden Companions</h1>
                 <p>Select a companion to check their wellbeing</p>
+                <button class="leaderboard-toggle" onclick="toggleLeaderboard()">
+                    Toggle Leaderboard
+                </button>
+            </div>
+
+            <!-- LEADERBOARD PANEL -->
+            <div id="leaderboardPanel" class="leaderboard-panel">
+                <div class="leaderboard-title">Companion Rankings</div>
+                <ul class="leaderboard-list" id="leaderboardList">
+                    <!-- Leaderboard items will be generated here -->
+                </ul>
             </div>
 
             <div class="character-grid" id="characterGrid">
@@ -583,7 +720,7 @@
     <div id="detailScreen" class="screen">
         <div class="container">
             <div class="detail-header">
-                <button class="back-button" onclick="backToCollection()">🌿 Back to Garden</button>
+                <button class="back-button" onclick="backToCollection()">Back to Garden</button>
                 <div class="character-title" id="characterTitle"></div>
             </div>
 
@@ -618,14 +755,14 @@
             </div>
 
             <div class="quick-nav">
-                <div class="quick-nav-label">🌱 Switch Companions</div>
+                <div class="quick-nav-label">Switch Companions</div>
                 <div class="quick-nav-buttons" id="quickNavButtons"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // 🔥 SHARED STATE IMAGES - ALL CHARACTERS USE THESE SAME 5 IMAGES
+        // SHARED STATE IMAGES - ALL CHARACTERS USE THESE SAME 5 IMAGES
         const stateImages = {
             1: "images/state1-critical.jpg",
             2: "images/state2-low.jpg",
@@ -634,41 +771,35 @@
             5: "images/state5-excellent.jpg"
         };
 
-        // 🔥 4 CHARACTERS WITH PARAMETER n
-        // State bins: 
-        // State 1: 0-10
-        // State 2: 10 - (20+n)
-        // State 3: (20+n) - (30+2n)
-        // State 4: (30+2n) - (40+3n)
-        // State 5: (40+3n) - infinity
+        // 4 CHARACTERS WITH PARAMETER n
         const characters = [
             {
                 id: "char1",
                 name: "char1",
-                n: 1,        // Parameter n = 1
-                points: 25   // Starting points
+                n: 1,
+                points: 25
             },
             {
                 id: "char2",
                 name: "char2",
-                n: 2,        // Parameter n = 2
+                n: 2,
                 points: 35
             },
             {
                 id: "char3",
                 name: "char3",
-                n: 3,        // Parameter n = 3
+                n: 3,
                 points: 45
             },
             {
                 id: "char4",
                 name: "char4",
-                n: 4,        // Parameter n = 4
+                n: 4,
                 points: 55
             }
         ];
 
-        // State configurations (names and descriptions)
+        // State configurations
         const stateInfo = {
             1: { 
                 name: "Wilting", 
@@ -698,8 +829,9 @@
         };
 
         let currentCharacter = null;
+        let leaderboardVisible = false;
 
-        // 🔥 CALCULATE STATE THRESHOLDS BASED ON CHARACTER'S n
+        // CALCULATE STATE THRESHOLDS BASED ON CHARACTER'S n
         function getStateThresholds(n) {
             return {
                 1: { min: 0, max: 10 },
@@ -731,12 +863,62 @@
                     };
                 }
             }
-            // Fallback to state 5 if points exceed all thresholds
             return { 
                 num: 5, 
                 ...stateInfo[5],
                 ...thresholds[5]
             };
+        }
+
+        // Toggle leaderboard visibility
+        function toggleLeaderboard() {
+            leaderboardVisible = !leaderboardVisible;
+            const leaderboardPanel = document.getElementById('leaderboardPanel');
+            
+            if (leaderboardVisible) {
+                leaderboardPanel.classList.add('show');
+                updateLeaderboard();
+            } else {
+                leaderboardPanel.classList.remove('show');
+            }
+        }
+
+        // Update leaderboard
+        function updateLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+
+            // Sort characters by points (descending)
+            const sortedCharacters = [...characters].sort((a, b) => b.points - a.points);
+
+            sortedCharacters.forEach((character, index) => {
+                const currentState = getCurrentState(character);
+                const rank = index + 1;
+                
+                const li = document.createElement('li');
+                li.className = 'leaderboard-item';
+                li.onclick = () => {
+                    leaderboardVisible = false;
+                    document.getElementById('leaderboardPanel').classList.remove('show');
+                    viewCharacter(character.id);
+                };
+
+                let rankClass = '';
+                if (rank === 1) rankClass = 'first';
+                else if (rank === 2) rankClass = 'second';
+                else if (rank === 3) rankClass = 'third';
+
+                li.innerHTML = `
+                    <div class="leaderboard-rank ${rankClass}">#${rank}</div>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">${character.name}</div>
+                        <div class="leaderboard-state">${currentState.name} (n=${character.n})</div>
+                    </div>
+                    <div class="leaderboard-points">${character.points} pts</div>
+                `;
+                
+                leaderboardList.appendChild(li);
+            });
         }
 
         // Initialize collection screen
@@ -746,7 +928,6 @@
 
             characters.forEach(character => {
                 const currentState = getCurrentState(character);
-                const maxPoints = getStateThresholds(character.n)[5].min; // First threshold of state 5
                 
                 const card = document.createElement('div');
                 card.className = 'character-card';
@@ -759,6 +940,11 @@
                 `;
                 characterGrid.appendChild(card);
             });
+
+            // Update leaderboard if it's visible
+            if (leaderboardVisible) {
+                updateLeaderboard();
+            }
         }
 
         // View a specific character
@@ -830,7 +1016,7 @@
 
             const currentState = getCurrentState(currentCharacter);
             const thresholds = getStateThresholds(currentCharacter.n);
-            const maxPoints = thresholds[5].min; // Use start of state 5 as reference max
+            const maxPoints = thresholds[5].min;
             
             const characterImage = document.getElementById('characterImage');
             const characterState = document.getElementById('characterState');
@@ -841,7 +1027,7 @@
             // Update points display
             pointsDisplay.textContent = currentCharacter.points;
             
-            // Update progress bar (relative to reaching state 5)
+            // Update progress bar
             const percentage = Math.min((currentCharacter.points / maxPoints) * 100, 100);
             progressFill.style.width = percentage + '%';
             progressFill.textContent = Math.round(percentage) + '%';
@@ -865,7 +1051,7 @@
             if (!currentCharacter) return;
             
             currentCharacter.points += amount;
-            currentCharacter.points = Math.max(0, currentCharacter.points); // No upper limit
+            currentCharacter.points = Math.max(0, currentCharacter.points);
             updateDetailUI();
         }
 
@@ -873,7 +1059,6 @@
         function resetPoints() {
             if (!currentCharacter) return;
             
-            // Reset to middle of state 3
             const thresholds = getStateThresholds(currentCharacter.n);
             currentCharacter.points = Math.floor((thresholds[3].min + thresholds[3].max) / 2);
             updateDetailUI();
