@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import datetime
 import requests
 from event_parser import EventParser
+from image_detection import imageDetection
 
 # 1. Setup Intents (Permission to read messages)
 intents = discord.Intents.default()
@@ -15,6 +16,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Initialize event parser
 event_parser = EventParser()
+image_detection = imageDetection()
 
 # Backend API URL
 BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:5000')
@@ -47,6 +49,20 @@ async def on_message(message):
             await process_thread_response(message, incomplete_events[message.channel.id])
             return
 
+    if message.attachments:
+        for attachment in message.attachments:
+            if attachment.content_type and attachment.content_type.startswith('image'):
+                temp_filename = f"temp_{message.id}_{attachment.filename}"
+                try:
+                    await attachment.save(temp_filename)
+                    face_count = image_detection.count_faces(temp_filename)
+                    await message.channel.send(f"Found **{face_count}** face(s) in that photo! 👤")
+                except Exception as e:
+                    print(f"Error processing image: {e}")
+                finally:
+                    if os.path.exists(temp_filename):
+                        os.remove(temp_filename)
+                        
     # Check if message is about scheduling an event
     try:
         event_details = event_parser.parse_event_message(message.content)
