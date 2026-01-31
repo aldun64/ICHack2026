@@ -56,7 +56,8 @@ async def on_message(message):
                 try:
                     await attachment.save(temp_filename)
                     face_count = image_detection.count_faces(temp_filename)
-                    await message.channel.send(f"Found **{face_count}** face(s) in that photo! 👤")
+                    if face_count > 0:
+                        await message.channel.send(f"Found **{face_count}** face(s) in that photo! 👤")
                 except Exception as e:
                     print(f"Error processing image: {e}")
                 finally:
