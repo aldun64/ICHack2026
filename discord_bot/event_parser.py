@@ -192,6 +192,85 @@ Respond with ONLY the ISO datetime, nothing else. If you cannot determine a vali
             print(f"Error converting datetime: {e}")
             return None
 
+    def check_event_similarity(self, new_event: dict) -> bool:
+        """
+        Check if the new event is semantically similar to any recently scheduled events.
+        Uses Claude's conversation history as the source of truth for recently scheduled events.
+        Returns True if a duplicate is found, False otherwise.
+        """
+        try:
+            # Add question to conversation history
+            self.conversation_history.append({
+                "role": "user",
+                "content": f"""I'm about to schedule a new event. Based on our conversation history and events we've already scheduled,
+is this new event a duplicate or the same event as something we already scheduled?
+
+New event details:
+- Name: {new_event.get('name', 'Unknown')}
+- Location: {new_event.get('location', 'TBD')}
+- When: {new_event.get('datetime_hint', 'TBD')}
+- Description: {new_event.get('description', 'None')}
+
+Look through our recent conversation and event scheduling history. Is this the same event we already scheduled,
+or is it a different event?
+
+Respond with only "YES" if it's a duplicate (same event), "NO" if it's different."""
+            })
+
+            response = self.client.messages.create(
+                model="claude-opus-4-1-20250805",
+                max_tokens=100,
+                messages=self.conversation_history
+            )
+
+            response_text = response.content[0].text.strip().upper()
+
+            # Add Claude's response to history for continuity
+            self.conversation_history.append({
+                "role": "assistant",
+                "content": response_text
+            })
+
+            # Keep conversation history manageable (last 20 exchanges)
+            if len(self.conversation_history) > 40:
+                self.conversation_history = self.conversation_history[-40:]
+
+            print(f"Similarity check response: {response_text}", flush=True)
+
+            return "YES" in response_text
+
+        except Exception as e:
+            print(f"Error checking event similarity: {e}", flush=True)
+            return False
+
+    def add_to_agent_context(self, event_details: dict) -> None:
+        """
+        Add a scheduled event to Claude's conversation history as context.
+        This becomes part of the agent's memory for deduplication.
+        """
+        try:
+            event_summary = f"""Event scheduled:
+- Name: {event_details.get('name', 'Unknown')}
+- Location: {event_details.get('location', 'TBD')}
+- When: {event_details.get('datetime_hint', 'TBD')}
+- Description: {event_details.get('description', 'None')}
+
+This event has been scheduled and saved. Remember this for future duplicate detection."""
+
+            self.conversation_history.append({
+                "role": "assistant",
+                "content": event_summary
+            })
+
+            # Keep conversation history manageable
+            if len(self.conversation_history) > 40:
+                self.conversation_history = self.conversation_history[-40:]
+
+            print(f"Added to agent context: {event_details.get('name')}", flush=True)
+
+        except Exception as e:
+            print(f"Error adding to agent context: {e}", flush=True)
+
     def extract_event_info_from_thread(self, message_content: str, missing_fields: list) -> dict | None:
         """
         Extract missing event information from a thread response.
