@@ -45,15 +45,16 @@ CREATE INDEX IF NOT EXISTS idx_attendance_user ON social_attendance(discord_id);
 -- Seed data: Users
 INSERT INTO discord_users (discord_id, username, display_name)
 VALUES
-  (123456789, 'alice', 'Alice'),
-  (987654321, 'bob', 'Bob'),
-  (555444333, 'charlie', 'Charlie')
+  (111111111, 'aldiyar', 'Aldiyar'),
+  (222222222, 'joseph', 'Joseph'),
+  (333333333, 'minjae', 'Minjae'),
+  (444444444, 'izzy', 'Izzy')
 ON CONFLICT (discord_id) DO NOTHING;
 
 -- Seed data: Socials/Events
 INSERT INTO socials (name, description, location, event_date, created_by, status, group_points)
 VALUES
-  ('Coffee Meetup', 'Casual coffee hangout to catch up and chat', 'Downtown Cafe', '2025-02-07 10:00:00', 123456789, 'planned', 0),
-  ('Brunch Party', 'Sunday brunch with the crew at the new brunch spot', 'Riverside Brunch Spot', '2025-02-09 11:00:00', 987654321, 'planned', 0),
-  ('Game Night', 'Board games and video games night', 'Alice''s Place', '2025-02-15 19:00:00', 555444333, 'planned', 0)
+  ('Coffee Meetup', 'Casual coffee hangout to catch up and chat', 'Downtown Cafe', '2025-02-07 10:00:00', 111111111, 'planned', 0),
+  ('Brunch Party', 'Sunday brunch with the crew at the new brunch spot', 'Riverside Brunch Spot', '2025-02-09 11:00:00', 222222222, 'planned', 0),
+  ('Game Night', 'Board games and video games night', 'Aldiyar''s Place', '2025-02-15 19:00:00', 333333333, 'planned', 0)
 ON CONFLICT DO NOTHING;

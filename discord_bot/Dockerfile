@@ -8,8 +8,9 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy bot code and environment file
+# Copy bot code, parser module, and environment file
 COPY discord_bot.py .
+COPY event_parser.py .
 COPY .env .
 
 # Create logs directory
