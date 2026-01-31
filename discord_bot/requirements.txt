@@ -2,3 +2,5 @@ discord
 python-dotenv
 anthropic
 requests
+mediapipe
+opencv-python-headless

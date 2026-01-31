@@ -2,6 +2,9 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import cv2
+from pathlib import Path
+
+MODEL_PATH = Path(__file__).parent / "imageModel" / "blaze_face_short_range.tflite"
 
 class imageDetection:
     def __init__(self):
@@ -12,9 +15,8 @@ class imageDetection:
         """
         Takes an image path and returns the number of faces detected as an integer.
         """
-        # 1. Define the path to your TFLite model
-        model_path = r'discord_bot\imageModel\blaze_face_short_range.tflite'
 
+        model_path = str(MODEL_PATH)
         # 2. Configure the Face Detector
         base_options = python.BaseOptions(model_asset_path=model_path)
         options = vision.FaceDetectorOptions(base_options=base_options)
