@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Collection Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Collection Screen Styles */
+        .collection-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .collection-header h1 {
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .collection-header p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .character-card {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .character-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: #667eea;
+        }
+
+        .character-preview {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 4px solid #ddd;
+        }
+
+        .character-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .character-points-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .character-state-badge {
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-1 { background: #ffebee; color: #f44336; }
+        .badge-2 { background: #fff3e0; color: #ff9800; }
+        .badge-3 { background: #fffde7; color: #f57f17; }
+        .badge-4 { background: #f1f8e9; color: #689f38; }
+        .badge-5 { background: #e8f5e9; color: #4CAF50; }
+
+        /* Detail Screen Styles */
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            background: #666;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+
+        .character-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .character-wrapper {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .character-image {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 5px solid #ddd;
+            transition: all 0.5s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .character-state {
+            margin-top: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .state-description {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .points-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .points-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .points-label {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-add {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-subtract {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-subtract:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-reset {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #e68900;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .state-indicators {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .state-indicator {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            flex: 1;
+        }
+
+        .state-indicator.active {
+            color: #667eea;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        /* State-specific styling */
+        .state-1 { border-color: #f44336; }
+        .state-2 { border-color: #ff9800; }
+        .state-3 { border-color: #ffeb3b; }
+        .state-4 { border-color: #8bc34a; }
+        .state-5 { border-color: #4CAF50; }
+
+        .quick-nav {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .quick-nav-btn {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-nav-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .quick-nav-btn.current {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- CHARACTER COLLECTION SCREEN -->
+    <div id="collectionScreen" class="screen active">
+        <div class="container">
+            <div class="collection-header">
+                <h1>👥 My Character Collection</h1>
+                <p>Click on any character to view and manage their status</p>
+            </div>
+
+            <div class="character-grid" id="characterGrid">
+                <!-- Character cards will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARACTER DETAIL SCREEN -->
+    <div id="detailScreen" class="screen">
+        <div class="container">
+            <div class="detail-header">
+                <button class="back-button" onclick="backToCollection()">← Back to Collection</button>
+                <div class="character-title" id="characterTitle"></div>
+            </div>
+
+            <div class="character-wrapper">
+                <img id="characterImage" 
+                     src="" 
+                     alt="Character" 
+                     class="character-image state-3">
+                <div class="character-state" id="characterState">Normal State</div>
+                <div class="state-description" id="stateDescription"></div>
+            </div>
+
+            <div class="points-display">
+                <div class="points-label">Points</div>
+                <div class="points-number" id="pointsDisplay">50</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 50%;">50%</div>
+            </div>
+
+            <div class="state-indicators">
+                <div class="state-indicator">Critical<br>0-20</div>
+                <div class="state-indicator">Low<br>21-40</div>
+                <div class="state-indicator active">Normal<br>41-60</div>
+                <div class="state-indicator">Good<br>61-80</div>
+                <div class="state-indicator">Excellent<br>81-100</div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-subtract" onclick="changePoints(-10)">-10</button>
+                <button class="btn-subtract" onclick="changePoints(-5)">-5</button>
+                <button class="btn-reset" onclick="resetPoints()">Reset</button>
+                <button class="btn-add" onclick="changePoints(5)">+5</button>
+                <button class="btn-add" onclick="changePoints(10)">+10</button>
+            </div>
+
+            <div class="quick-nav">
+                <div style="width: 100%; text-align: center; color: #666; font-size: 14px; margin-bottom: 10px;">
+                    Quick Switch:
+                </div>
+                <div id="quickNavButtons" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔥 SHARED STATE IMAGES - ALL CHARACTERS USE THESE SAME 5 IMAGES
+        const stateImages = {
+            1: "images/state1-critical.jpg",
+            2: "images/state2-low.jpg",
+            3: "images/state3-normal.jpg",
+            4: "images/state4-good.jpg",
+            5: "images/state5-excellent.jpg"
+        };
+
+        // 🔥 4 CHARACTERS WITH PLACEHOLDER NAMES
+        const characters = [
+            {
+                id: "char1",
+                name: "char1",
+                points: 75
+            },
+            {
+                id: "char2",
+                name: "char2",
+                points: 30
+            },
+            {
+                id: "char3",
+                name: "char3",
+                points: 90
+            },
+            {
+                id: "char4",
+                name: "char4",
+                points: 15
+            }
+        ];
+
+        // State configurations
+        const states = {
+            1: { 
+                name: "Critical", 
+                min: 0, 
+                max: 20, 
+                class: "state-1",
+                description: "Character is in critical condition!"
+            },
+            2: { 
+                name: "Low", 
+                min: 21, 
+                max: 40, 
+                class: "state-2",
+                description: "Character needs help..."
+            },
+            3: { 
+                name: "Normal", 
+                min: 41, 
+                max: 60, 
+                class: "state-3",
+                description: "Character is doing okay"
+            },
+            4: { 
+                name: "Good", 
+                min: 61, 
+                max: 80, 
+                class: "state-4",
+                description: "Character is feeling great!"
+            },
+            5: { 
+                name: "Excellent", 
+                min: 81, 
+                max: 100, 
+                class: "state-5",
+                description: "Character is at peak condition!"
+            }
+        };
+
+        let currentCharacter = null;
+        const maxPoints = 100;
+
+        // Get current state based on points
+        function getCurrentState(points) {
+            for (let stateNum in states) {
+                const state = states[stateNum];
+                if (points >= state.min && points <= state.max) {
+                    return { num: parseInt(stateNum), ...state };
+                }
+            }
+            return { num: 3, ...states[3] };
+        }
+
+        // Initialize collection screen
+        function initCollectionScreen() {
+            const characterGrid = document.getElementById('characterGrid');
+            characterGrid.innerHTML = '';
+
+            characters.forEach(character => {
+                const currentState = getCurrentState(character.points);
+                
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.onclick = () => viewCharacter(character.id);
+                card.innerHTML = `
+                    <img src="${stateImages[currentState.num]}" alt="${character.name}" class="character-preview">
+                    <div class="character-name">${character.name}</div>
+                    <div class="character-points-badge">${character.points} / ${maxPoints} pts</div>
+                    <div class="character-state-badge badge-${currentState.num}">${currentState.name}</div>
+                `;
+                characterGrid.appendChild(card);
+            });
+        }
+
+        // View a specific character
+        function viewCharacter(characterId) {
+            currentCharacter = characters.find(c => c.id === characterId);
+            if (!currentCharacter) return;
+
+            // Switch screens
+            document.getElementById('collectionScreen').classList.remove('active');
+            document.getElementById('detailScreen').classList.add('active');
+
+            // Set character title
+            document.getElementById('characterTitle').textContent = currentCharacter.name;
+
+            // Generate quick navigation buttons
+            generateQuickNav();
+
+            // Update UI
+            updateDetailUI();
+        }
+
+        // Generate quick navigation buttons
+        function generateQuickNav() {
+            const quickNavButtons = document.getElementById('quickNavButtons');
+            quickNavButtons.innerHTML = '';
+
+            characters.forEach(character => {
+                const btn = document.createElement('button');
+                btn.className = 'quick-nav-btn';
+                if (character.id === currentCharacter.id) {
+                    btn.classList.add('current');
+                }
+                btn.textContent = character.name;
+                btn.onclick = () => {
+                    if (character.id !== currentCharacter.id) {
+                        viewCharacter(character.id);
+                    }
+                };
+                quickNavButtons.appendChild(btn);
+            });
+        }
+
+        // Update detail screen UI
+        function updateDetailUI() {
+            if (!currentCharacter) return;
+
+            const currentState = getCurrentState(currentCharacter.points);
+            const characterImage = document.getElementById('characterImage');
+            const characterState = document.getElementById('characterState');
+            const stateDescription = document.getElementById('stateDescription');
+            const pointsDisplay = document.getElementById('pointsDisplay');
+            const progressFill = document.getElementById('progressFill');
+            
+            // Update points display
+            pointsDisplay.textContent = currentCharacter.points;
+            
+            // Update progress bar
+            const percentage = (currentCharacter.points / maxPoints) * 100;
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = Math.round(percentage) + '%';
+            
+            // Update character state text
+            characterState.textContent = currentState.name + ' State';
+            stateDescription.textContent = currentState.description;
+            
+            // Update character image based on current state (all characters use same images)
+            characterImage.src = stateImages[currentState.num];
+            
+            // Update character image border
+            characterImage.className = 'character-image ' + currentState.class;
+            
+            // Update state indicators
+            const indicators = document.querySelectorAll('.state-indicator');
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index + 1 === currentState.num);
+            });
+        }
+
+        // Change points for current character
+        function changePoints(amount) {
+            if (!currentCharacter) return;
+            
+            currentCharacter.points += amount;
+            currentCharacter.points = Math.max(0, Math.min(maxPoints, currentCharacter.points));
+            updateDetailUI();
+        }
+
+        // Reset points for current character
+        function resetPoints() {
+            if (!currentCharacter) return;
+            
+            currentCharacter.points = 50;
+            updateDetailUI();
+        }
+
+        // Go back to collection screen
+        function backToCollection() {
+            document.getElementById('detailScreen').classList.remove('active');
+            document.getElementById('collectionScreen').classList.add('active');
+            
+            // Refresh collection to show updated points
+            initCollectionScreen();
+        }
+
+        // Initialize on page load
+        initCollectionScreen();
+    </script>
+</body>
+</html>
