@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Virtual Pet</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #root {
+            width: 100%;
+            max-width: 1200px;
+            min-height: 100vh;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .app-container {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            min-height: 100vh;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .pet-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .pet-container {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 20px;
+            padding: 60px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pet-visual {
+            font-size: 200px;
+            animation: float 3s ease-in-out infinite;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .pet-visual:active {
+            transform: scale(0.95);
+        }
+
+        .stats-container {
+            margin-bottom: 25px;
+        }
+
+        .stat {
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .stat-bar-bg {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .stat-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease, background-color 0.3s ease;
+        }
+
+        .hunger-bar { background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%); }
+        .happiness-bar { background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); }
+        .energy-bar { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); }
+
+        .actions-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 0;
+        }
+
+        .action-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            color: white;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .feed-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .rest-btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            box-shadow: 0 4px 15px rgba(67, 233, 123, 0.4);
+        }
+
+        .rename-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .achievements-container {
+            flex: 1;
+        }
+
+        .achievements-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .achievement {
+            background: #f5f5f5;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .achievement.unlocked {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            box-shadow: 0 2px 10px rgba(252, 182, 159, 0.3);
+        }
+
+        .achievement-icon {
+            font-size: 24px;
+        }
+
+        .achievement-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .achievement.locked {
+            opacity: 0.5;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .modal h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function App() {
+            // Load saved state or create new pet
+            const loadPet = () => {
+                const saved = localStorage.getItem('virtualPet');
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+                return {
+                    name: "Buddy",
+                    stats: {
+                        hunger: 100,
+                        happiness: 100,
+                        energy: 100
+                    },
+                    achievements: [
+                        { id: 1, name: "First Feed", unlocked: false },
+                        { id: 2, name: "First Play", unlocked: false },
+                        { id: 3, name: "First Rest", unlocked: false },
+                        { id: 4, name: "Pet Master", unlocked: false },
+                        { id: 5, name: "Name Changer", unlocked: false }
+                    ],
+                    feedCount: 0,
+                    playCount: 0,
+                    restCount: 0
+                };
+            };
+
+            const [pet, setPet] = useState(loadPet);
+            const [showRenameModal, setShowRenameModal] = useState(false);
+            const [newName, setNewName] = useState("");
+
+            // Save pet state to localStorage whenever it changes
+            useEffect(() => {
+                localStorage.setItem('virtualPet', JSON.stringify(pet));
+            }, [pet]);
+
+            // Decrease stats over time
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    setPet(prev => ({
+                        ...prev,
+                        stats: {
+                            hunger: Math.max(0, prev.stats.hunger - 1),
+                            happiness: Math.max(0, prev.stats.happiness - 0.5),
+                            energy: Math.max(0, prev.stats.energy - 0.3)
+                        }
+                    }));
+                }, 3000); // Every 3 seconds
+
+                return () => clearInterval(interval);
+            }, []);
+
+            const checkAchievements = (updatedPet) => {
+                const achievements = [...updatedPet.achievements];
+                
+                if (updatedPet.feedCount >= 1 && !achievements[0].unlocked) {
+                    achievements[0].unlocked = true;
+                }
+                if (updatedPet.playCount >= 1 && !achievements[1].unlocked) {
+                    achievements[1].unlocked = true;
+                }
+                if (updatedPet.restCount >= 1 && !achievements[2].unlocked) {
+                    achievements[2].unlocked = true;
+                }
+                if (updatedPet.feedCount >= 5 && updatedPet.playCount >= 5 && updatedPet.restCount >= 5 && !achievements[3].unlocked) {
+                    achievements[3].unlocked = true;
+                }
+
+                return achievements;
+            };
+
+            const handleFeed = () => {
+                setPet(prev => {
+                    const updated = {
+                        ...prev,
+                        stats: {
+                            ...prev.stats,
+                            hunger: Math.min(100, prev.stats.hunger + 30)
+                        },
+                        feedCount: prev.feedCount + 1
+                    };
+                    updated.achievements = checkAchievements(updated);
+                    return updated;
+                });
+            };
+
+            const handlePlay = () => {
+                setPet(prev => {
+                    const updated = {
+                        ...prev,
+                        stats: {
+                            ...prev.stats,
+                            happiness: Math.min(100, prev.stats.happiness + 25),
+                            energy: Math.max(0, prev.stats.energy - 15)
+                        },
+                        playCount: prev.playCount + 1
+                    };
+                    updated.achievements = checkAchievements(updated);
+                    return updated;
+                });
+            };
+
+            const handleRest = () => {
+                setPet(prev => {
+                    const updated = {
+                        ...prev,
+                        stats: {
+                            ...prev.stats,
+                            energy: Math.min(100, prev.stats.energy + 40)
+                        },
+                        restCount: prev.restCount + 1
+                    };
+                    updated.achievements = checkAchievements(updated);
+                    return updated;
+                });
+            };
+
+            const handleRename = () => {
+                if (newName.trim()) {
+                    setPet(prev => {
+                        const updated = {
+                            ...prev,
+                            name: newName.trim()
+                        };
+                        const achievements = [...updated.achievements];
+                        if (!achievements[4].unlocked) {
+                            achievements[4].unlocked = true;
+                        }
+                        updated.achievements = achievements;
+                        return updated;
+                    });
+                    setShowRenameModal(false);
+                    setNewName("");
+                }
+            };
+
+            const getPetEmoji = () => {
+                const { hunger, happiness, energy } = pet.stats;
+                const avg = (hunger + happiness + energy) / 3;
+                
+                if (avg > 70) return "😊";
+                if (avg > 40) return "😐";
+                return "😢";
+            };
+
+            return (
+                <div className="app-container">
+                    <div className="left-panel">
+                        <div className="header">
+                            <div className="pet-name">{pet.name}</div>
+                        </div>
+
+                        <div className="pet-container">
+                            <div className="pet-visual" onClick={() => setPet(prev => ({
+                                ...prev,
+                                stats: {
+                                    ...prev.stats,
+                                    happiness: Math.min(100, prev.stats.happiness + 5)
+                                }
+                            }))}>
+                                {getPetEmoji()}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="right-panel">
+                        <div className="stats-container">
+                            <div className="stat">
+                                <div className="stat-label">
+                                    <span>🍔 Hunger</span>
+                                    <span>{Math.round(pet.stats.hunger)}%</span>
+                                </div>
+                                <div className="stat-bar-bg">
+                                    <div className="stat-bar hunger-bar" style={{ width: `${pet.stats.hunger}%` }}></div>
+                                </div>
+                            </div>
+
+                            <div className="stat">
+                                <div className="stat-label">
+                                    <span>😊 Happiness</span>
+                                    <span>{Math.round(pet.stats.happiness)}%</span>
+                                </div>
+                                <div className="stat-bar-bg">
+                                    <div className="stat-bar happiness-bar" style={{ width: `${pet.stats.happiness}%` }}></div>
+                                </div>
+                            </div>
+
+                            <div className="stat">
+                                <div className="stat-label">
+                                    <span>⚡ Energy</span>
+                                    <span>{Math.round(pet.stats.energy)}%</span>
+                                </div>
+                                <div className="stat-bar-bg">
+                                    <div className="stat-bar energy-bar" style={{ width: `${pet.stats.energy}%` }}></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="actions-container">
+                            <button className="action-btn feed-btn" onClick={handleFeed}>
+                                🍔 Feed
+                            </button>
+                            <button className="action-btn play-btn" onClick={handlePlay}>
+                                🎮 Play
+                            </button>
+                            <button className="action-btn rest-btn" onClick={handleRest}>
+                                💤 Rest
+                            </button>
+                            <button className="action-btn rename-btn" onClick={() => setShowRenameModal(true)}>
+                                ✏️ Rename
+                            </button>
+                        </div>
+
+                        <div className="achievements-container">
+                            <div className="achievements-header">
+                                🏆 Achievements
+                            </div>
+                            {pet.achievements.map(achievement => (
+                                <div 
+                                    key={achievement.id} 
+                                    className={`achievement ${achievement.unlocked ? 'unlocked' : 'locked'}`}
+                                >
+                                    <div className="achievement-icon">
+                                        {achievement.unlocked ? '🏆' : '🔒'}
+                                    </div>
+                                    <div className="achievement-name">
+                                        {achievement.name}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {showRenameModal && (
+                        <div className="modal-overlay">
+                            <div className="modal">
+                                <h2>Rename Your Pet</h2>
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter new name"
+                                    value={newName}
+                                    onChange={(e) => setNewName(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleRename()}
+                                    autoFocus
+                                />
+                                <div className="modal-buttons">
+                                    <button className="modal-btn secondary" onClick={() => {
+                                        setShowRenameModal(false);
+                                        setNewName("");
+                                    }}>
+                                        Cancel
+                                    </button>
+                                    <button className="modal-btn primary" onClick={handleRename}>
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
