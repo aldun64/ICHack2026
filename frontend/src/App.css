@@ -1,0 +1,114 @@
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  padding: 20px;
+}
+
+h1 {
+  margin: 0 0 30px 0;
+  font-size: 3em;
+}
+
+h2 {
+  margin: 20px 0 15px 0;
+  font-size: 1.5em;
+}
+
+.health-section {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  min-width: 300px;
+}
+
+.health-badge {
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.health-badge.healthy {
+  background-color: #4caf50;
+  color: white;
+}
+
+.health-badge.unhealthy,
+.health-badge.error {
+  background-color: #f44336;
+  color: white;
+}
+
+.form-section {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  min-width: 300px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  color: #333;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #61dafb;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  font-weight: bold;
+  color: #282c34;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #4a9db5;
+}
+
+.data-section {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  min-width: 300px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 4px;
+  text-align: left;
+}
+
+li strong {
+  color: #61dafb;
+}

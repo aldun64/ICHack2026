@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: hackathon_db
+    environment:
+      POSTGRES_USER: hackathon_user
+      POSTGRES_PASSWORD: hackathon_password
+      POSTGRES_DB: hackathon_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hackathon_user -d hackathon_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hackathon_network
+
+  backend:
+    build: ./backend
+    container_name: hackathon_backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: hackathon_db
+      DB_USER: hackathon_user
+      DB_PASSWORD: hackathon_password
+      FLASK_ENV: development
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - hackathon_network
+
+  frontend:
+    build: ./frontend
+    container_name: hackathon_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - hackathon_network
+
+volumes:
+  postgres_data:
+
+networks:
+  hackathon_network:
+    driver: bridge
