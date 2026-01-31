@@ -54,6 +54,19 @@ services:
     networks:
       - hackathon_network
 
+  discord_bot:
+    build: ./discord_bot
+    container_name: hackathon_discord_bot
+    env_file:
+      - ./discord_bot/.env
+    environment:
+      BACKEND_URL: http://backend:5000
+    depends_on:
+      - backend
+    networks:
+      - hackathon_network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
 

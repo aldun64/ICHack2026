@@ -3,15 +3,22 @@ import './App.css'
 
 function App() {
   const [health, setHealth] = useState(null)
-  const [data, setData] = useState([])
+  const [groupStats, setGroupStats] = useState(null)
+  const [userStats, setUserStats] = useState(null)
+  const [socials, setSocials] = useState([])
   const [loading, setLoading] = useState(true)
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
+  const [selectedUserId, setSelectedUserId] = useState(123456789) // Alice by default
 
   useEffect(() => {
     checkHealth()
-    fetchData()
+    fetchGroupStats()
+    fetchUserStats(selectedUserId)
+    fetchSocials()
   }, [])
+
+  useEffect(() => {
+    fetchUserStats(selectedUserId)
+  }, [selectedUserId])
 
   const checkHealth = async () => {
     try {
@@ -24,44 +31,44 @@ function App() {
     }
   }
 
-  const fetchData = async () => {
+  const fetchGroupStats = async () => {
     try {
-      setLoading(true)
-      const response = await fetch('http://localhost:5000/api/data')
+      const response = await fetch('http://localhost:5000/api/stats/group')
       const result = await response.json()
-      setData(result)
+      setGroupStats(result)
     } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
+      console.error('Error fetching group stats:', error)
     }
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const fetchUserStats = async (userId) => {
     try {
-      const response = await fetch('http://localhost:5000/api/data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, description })
-      })
-      if (response.ok) {
-        setName('')
-        setDescription('')
-        fetchData()
-      }
+      const response = await fetch(`http://localhost:5000/api/stats/user/${userId}`)
+      const result = await response.json()
+      setUserStats(result)
     } catch (error) {
-      console.error('Error creating data:', error)
+      console.error('Error fetching user stats:', error)
+    }
+  }
+
+  const fetchSocials = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('http://localhost:5000/api/socials')
+      const result = await response.json()
+      setSocials(result)
+    } catch (error) {
+      console.error('Error fetching socials:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>🚀 Hackathon Starter</h1>
-        
+        <h1>🎉 Group Chat Socials Tracker</h1>
+
         <div className="health-section">
           <h2>Backend Status</h2>
           {health ? (
@@ -74,41 +81,93 @@ function App() {
           )}
         </div>
 
-        <div className="form-section">
-          <h2>Add Data</h2>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            />
-            <button type="submit">Submit</button>
-          </form>
+        <div className="metrics-section">
+          <h2>📊 Group Metrics</h2>
+          {groupStats ? (
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <h3>Total Group Points</h3>
+                <p className="metric-value">{groupStats.total_group_points}</p>
+              </div>
+              <div className="metric-card">
+                <h3>Completed Socials</h3>
+                <p className="metric-value">{groupStats.completed_socials}</p>
+              </div>
+              <div className="metric-card">
+                <h3>Upcoming Socials</h3>
+                <p className="metric-value">{groupStats.upcoming_socials}</p>
+              </div>
+              <div className="metric-card">
+                <h3>Total Attendances</h3>
+                <p className="metric-value">{groupStats.total_attendances}</p>
+              </div>
+            </div>
+          ) : (
+            <p>Loading group metrics...</p>
+          )}
         </div>
 
-        <div className="data-section">
-          <h2>Sample Data</h2>
-          {loading ? (
-            <p>Loading...</p>
-          ) : data.length === 0 ? (
-            <p>No data yet. Add some above!</p>
+        <div className="user-metrics-section">
+          <h2>👤 User Metrics</h2>
+          <div className="user-selector">
+            <label htmlFor="user-select">Select User: </label>
+            <select
+              id="user-select"
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(Number(e.target.value))}
+            >
+              <option value={123456789}>Alice</option>
+              <option value={987654321}>Bob</option>
+              <option value={555444333}>Charlie</option>
+            </select>
+          </div>
+          {userStats ? (
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <h3>Username</h3>
+                <p className="metric-value">{userStats.username}</p>
+              </div>
+              <div className="metric-card">
+                <h3>Total RSVPs</h3>
+                <p className="metric-value">{userStats.total_rsvps}</p>
+              </div>
+              <div className="metric-card">
+                <h3>Actually Attended</h3>
+                <p className="metric-value">{userStats.attended}</p>
+              </div>
+              <div className="metric-card">
+                <h3>Upcoming Events</h3>
+                <p className="metric-value">{userStats.upcoming}</p>
+              </div>
+            </div>
           ) : (
-            <ul>
-              {data.map((item) => (
-                <li key={item.id}>
-                  <strong>{item.name}</strong>: {item.description}
-                </li>
+            <p>Loading user metrics...</p>
+          )}
+        </div>
+
+        <div className="socials-section">
+          <h2>🎊 Events</h2>
+          {loading ? (
+            <p>Loading events...</p>
+          ) : socials.length === 0 ? (
+            <p>No events yet.</p>
+          ) : (
+            <div className="socials-list">
+              {socials.map((social) => (
+                <div key={social.id} className="social-card">
+                  <div className="social-header">
+                    <h3>{social.name}</h3>
+                    <span className={`status-badge status-${social.status}`}>{social.status}</span>
+                  </div>
+                  <p className="social-description">{social.description}</p>
+                  <div className="social-details">
+                    <span>📍 {social.location || 'TBD'}</span>
+                    <span>📅 {social.event_date ? new Date(social.event_date).toLocaleDateString() : 'TBD'}</span>
+                    <span>⭐ {social.group_points} points</span>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </header>
